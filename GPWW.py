@@ -75,9 +75,10 @@ def getNewArtists(txt, lst):
     if artist not in lst:
       lst.append(artist)
       if devMode:
-        print artist
+        print "New Artist: %s" %artist
     else:
-      print "artist: %s already exists!" %artist
+      if devMode:
+        print "artist: %s already exists!" %artist
 
   return lst
 
