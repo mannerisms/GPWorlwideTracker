@@ -21,16 +21,16 @@ def main():
 
   AllArtist = []
 
-  # Read The masterList of artists 
+  # Read The masterList of artists
   with open(__location__+"/AllArtists.txt") as f:
     AllArtists = f.read().splitlines()
 
   # Find the latest GPWW site
   latestURLs = retrieveLatest(__site__)
 
-  # if devMode:
-    # latestURLs = ['http://www.bbc.co.uk/programmes/b03zjd84#segments']
-      
+  if devMode:
+    latestURLs = ['http://www.bbc.co.uk/programmes/b03zjd84#segments']
+
   # Read in the GPWW website:
   for curURL in latestURLs:
     TempHTML = readGPWW(curURL)
@@ -43,6 +43,9 @@ def main():
   for artist in AllArtists:
     txt.write("%s\n" % artist)
   txt.close()
+
+  if devMode:
+    print "Script Complete"
 
 
 def retrieveLatest(EpisodeURL):
@@ -72,12 +75,12 @@ def getNewArtists(txt, lst):
   artists = re.findall(reArtists, txt)
 
   for artist in artists:
+    if devMode:
+     print "Checking artist: %s" %artist
     if artist not in lst:
       lst.append(artist)
       if devMode:
-        print artist
-    else:
-      print "artist: %s already exists!" %artist
+        print "New artist added: %s" %artist
 
   return lst
 
