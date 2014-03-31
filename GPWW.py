@@ -13,6 +13,9 @@ devMode = True
 # Imports
 import urllib2, os, sys, re
 
+import requests # for querying the API
+import json # for interpreting the data returned by the API
+
 # Path to Script
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 __site__ = 'http://www.bbc.co.uk/programmes/b01fm4ss/episodes/guide'
@@ -38,10 +41,23 @@ def main():
     # Create a list of Artists played this week
     AllArtists = getNewArtists(TempHTML,AllArtists)
 
+
+  playListTxt = ""
+
   AllArtists = sorted(AllArtists)
   txt = open(__location__+"/AllArtists.txt", "w")
   for artist in AllArtists:
     txt.write("%s\n" % artist)
+    # Lookup artist's top10 from spotify and return uri's for playlist
+  txt.close()
+
+
+  txt = open("playlist.txt", "w")
+
+  for artist in AllArtists:
+    songs = top10(artist)
+    for song in songs:
+        txt.write("%s\n" % song["uri"])
   txt.close()
 
   if devMode:
@@ -83,6 +99,44 @@ def getNewArtists(txt, lst):
         print "New artist added: %s" %artist
 
   return lst
+
+# Function copied from http://www.andresworld.co.uk/code/creating-a-festival-playlist-on-spotify-using-python/
+def top10(artist):
+  # an empty list of tracks
+  tracks = []
+  # set up for requests module
+  query_params = {'q': 'artist:'+artist} # nospace after colon
+  endpoint = 'http://ws.spotify.com/search/1/track.json'
+  response = requests.get(endpoint, params= query_params)
+  print response.status_code
+  print artist
+  if response.status_code == 200: # server responds nicely
+    data = json.loads(response.content) # load the json data
+    i = 0
+    while len(tracks) < 10:       # check we have some results, or haven't reached the end of them      
+      if int(data['info']['num_results']) == i or 100 == i:
+        break
+      # construct our 'track' library
+      track = {'name':data['tracks'][i]['name'], 'artist':data['tracks'][i]['artists'][0]['name'], 'uri':data['tracks'][i]['href']}       
+      # check the returned artist matches the queried artist      
+      if artist == track['artist']:
+        add = True      
+        # Check the track is available in my territory -> GB
+        if not 'GB' in data['tracks'][i]['album']['availability']['territories']:
+          add = False
+        # Check the track isn't included already, eliminates including single and album versions
+        for t in tracks:
+          if t['name'] == track['name']:
+            add = False
+        # Passed all the tests?
+        if add:
+          tracks.append(track)
+      i = i + 1
+    return tracks
+  else:
+    # bad response from the server
+    print artist+' caused an error'
+
 
 if __name__ == '__main__':
   main()
