@@ -8,7 +8,7 @@ reSites = "<a href=\"/programmes/([\S]*)#segments\">Music Played</a>"
 
 
 # Creates logs and prints whilst developing
-devMode = True
+devMode = False
 
 # Imports
 import urllib2, os, sys, re
@@ -31,8 +31,8 @@ def main():
   # Find the latest GPWW site
   latestURLs = retrieveLatest(__site__)
 
-  if devMode:
-    latestURLs = ['http://www.bbc.co.uk/programmes/b03zjd84#segments']
+  # if devMode:
+  #   latestURLs = ['http://www.bbc.co.uk/programmes/b03zjd84#segments']
 
   # Read in the GPWW website:
   for curURL in latestURLs:
@@ -108,8 +108,8 @@ def top10(artist):
   query_params = {'q': 'artist:'+artist} # nospace after colon
   endpoint = 'http://ws.spotify.com/search/1/track.json'
   response = requests.get(endpoint, params= query_params)
-  print response.status_code
-  print artist
+  # print response.status_code
+  # print artist
   if response.status_code == 200: # server responds nicely
     data = json.loads(response.content) # load the json data
     i = 0
@@ -121,8 +121,8 @@ def top10(artist):
       # check the returned artist matches the queried artist      
       if artist == track['artist']:
         add = True      
-        # Check the track is available in my territory -> GB
-        if not 'GB' in data['tracks'][i]['album']['availability']['territories']:
+        # Check the track is available in my territory -> NL
+        if not 'NL' in data['tracks'][i]['album']['availability']['territories']:
           add = False
         # Check the track isn't included already, eliminates including single and album versions
         for t in tracks:
